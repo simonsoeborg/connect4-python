@@ -1,5 +1,6 @@
 import sys
-import numpy as np
+import random
+from pygame import register_quit
 from connect4_controller import *
 # Author: Karl Emil, Simon Søborg, Kristoffer Baumgarten
 
@@ -7,116 +8,140 @@ from connect4_controller import *
 SCORE_STONES = 22
 ROW_COUNT = 6
 COLUMN_COUNT = 7
-
-# ----------------------------------- MinMax algoritme -----------------------------------
 # vi vil gerne return vores move (hvilket column stenen skal sættes) og værdieren er moven(så vi ved den move, er den som giver mest)
 
 # Her kan vi tæller spillerne sten på banen.
 
 
-def count_turns_stone(board, turns):
+def count_turns_stone(temp_board, turns):
     turns_score = 0
 
     for c in range(COLUMN_COUNT):
         for r in range(ROW_COUNT):
-            if(turns+1 == board[r][c]):
+            if(turns+1 == temp_board[r][c]):
                 turns_score += 1
     return turns_score
 
 
-# Redigeret version af Keith Galli til en temp_drop
-def temp_drop_piece(temp_board, row, col, piece):
-    temp_board[row][col] = piece
-
-
-def returnMoves(board, turn, c):
-
-    list_moves = []
-    temp_board = np.array(board)
-
-    row = get_next_open_row(temp_board, c)
-    temp_drop_piece(temp_board, row, c, turn+1)
-    list_moves.append(temp_board)
-
-    return list_moves
+def get_valid_locations(board):
+    valid_locations = []
+    for col in range(COLUMN_COUNT):
+        if is_valid_location(board, col):
+            valid_locations.append(col)
+    return valid_locations
 
 
 # her er et tjek for, hvis spillet skulle blive uafgjord
+
 def is_a_draw(board):
     for c in range(COLUMN_COUNT):
         if(is_valid_location(board, c)):
             return False
     return True
 
-# vores minMax skal returnere den bedste column for det givende move den skal lægge i.
+
+# Metode til at evaluere gamestate
+
+def calc_score(board, bool_turn_AI):
+    score = 0
+    piece = 1
+    line = []
+    if(not bool_turn_AI):
+        piece = 2
+
+    # Check points vertical locations
+    for c in range(COLUMN_COUNT):
+        line.clear()
+        for r in range(ROW_COUNT):
+            line.append(board[r][c])
+        score += line.count(piece) * 2
+
+    # Check points horizontal locations
+    for r in range(ROW_COUNT):
+        line.clear()
+        for c in range(COLUMN_COUNT):
+            line.append(board[r][c])
+        score += line.count(piece) * 2
+
+    # Check points positiv slope locations
+    for c in range(COLUMN_COUNT - 3):
+        line.clear()
+
+    # Check points negativ slope locations
+
+    return score
+
+    # --------------------------------------------- MinMax algo ---------------------------------------------
+
+    # vores minMax skal returnere den bedste column for det givende move den skal lægge i.
 
 
-def minMax(board, stone_count_AI, stone_count_player, boolTurnAI):
+def minMax(minmax_board, stone_count_AI, stone_count_player, bool_turn_AI, depth):
+    currentBoard = minmax_board.copy()
 
-    currentBoard = np.array(board)
     # Hvis det skulle ende i en draw - sætter den forrest da den måske kunne komme out of bounds hvis den køre til slut
     if(is_a_draw(currentBoard)):
         return (None, 0)
 
-    # hvis AI kan vinde 22 - sten (giver plus i return)
+    # Hvis AI vinder på en leaf
     if(winning_move(currentBoard, 2)):
-        return (None, (SCORE_STONES - stone_count_AI))
 
-    # hvis Spilleren kan vinde sten - 22 (giver minus i return)
+        return (None, (10000000000000000))
+
+    # hvis Spilleren vinder på en leaf
     if(winning_move(currentBoard, 1)):
-        return (None, (stone_count_player - SCORE_STONES))
+
+        return (None, (-10000000000000000))
+
+    # når vi stopper den på en dybde
+    if (depth == 0):
+        return (None, calc_score(currentBoard, bool_turn_AI))
 
     # for den givende state minmax er på, skal den lave en liste med alle de mulige seperate moves.
-    list_of_minMax_board_moves = []
     column_move = []
-    temp_list = []
-
     # isMax for AI - Men at vi også ved at det er AI's tur isMax == AITurn
-    if(boolTurnAI):
-        boolTurnAI = False
+    if(bool_turn_AI):
+        bool_turn_AI = False
         currentBestCol = 0
-        # AI
-        for c in range(COLUMN_COUNT):
-            if(is_valid_location(currentBoard, c)):
-                column_move.append(c)
-                temp_list.append(
-                    returnMoves(currentBoard, 1, c))
-        list_of_minMax_board_moves = np.array(temp_list)
+        print('best Column: ' + str(currentBestCol))
+        # AI # currentMaxVal = -∞
 
-        # currentMaxVal = -∞
-        currentMaxVal = -sys.maxsize-1
-        while(len(list_of_minMax_board_moves) != 0):
+        column_move = get_valid_locations(currentBoard)
+        random.shuffle(column_move)
+        for c in column_move:
+            currentMaxVal = -sys.maxsize-1
+            r = get_next_open_row(currentBoard, c)
+            newBoard = currentBoard.copy()
+            drop_piece(newBoard, r, c, 2)
             bestCol, maxVal = minMax(
-                list_of_minMax_board_moves, stone_count_AI+1, stone_count_player, boolTurnAI)
+                newBoard, stone_count_AI+1, stone_count_player, bool_turn_AI, depth-1)
 
             if(maxVal > currentMaxVal):
                 currentMaxVal = maxVal
-                currentBestCol = bestCol
-            column_move.pop(0)
+                currentBestCol = c
+
         return (currentBestCol, currentMaxVal)
 
-    # Husk ændre under.......................................
     else:
-        boolTurnAI = True
-        currentMinCol = 0
-        # Player
-        for c in range(COLUMN_COUNT):
-            if(is_valid_location(currentBoard, c)):
-                column_move.append(c)
-                temp_list = []
-                temp_list.append(
-                    returnMoves(currentBoard, 0, c)
-                )
-                list_of_minMax_board_moves.append(temp_list)
+        # _______________________________________min_max_player__________________________________________
 
-        # currentMinVal = ∞
-        currentMinVal: sys.maxsize
-        while(not list_of_minMax_board_moves):
+        bool_turn_AI = True
+
+        # Player # currentMinVal = ∞
+        currentMinVal = sys.maxsize
+
+        column_move = get_valid_locations(currentBoard)
+        random.shuffle(column_move)
+        for c in column_move:
+            currentMaxVal = -sys.maxsize-1
+            r = get_next_open_row(currentBoard, c)
+            newBoard = currentBoard.copy()
+            drop_piece(newBoard, r, c, 1)
             minCol, minVal = minMax(
-                list_of_minMax_board_moves, stone_count_AI, stone_count_player+1, boolTurnAI)
+                newBoard, stone_count_AI, stone_count_player+1, bool_turn_AI, depth-1)
 
             if(minVal < currentMinVal):
                 currentMinVal = minVal
-                currentMinCol = minCol
-            column_move.pop(0)
+                currentMinCol = c
+
         return (currentMinCol, currentMinVal)

@@ -68,6 +68,7 @@ pygame.display.update()
 
 myfont = pygame.font.SysFont("monospace", 75)
 
+turn = random.randint(0, 1)
 
 while not game_over:
 
@@ -111,15 +112,18 @@ while not game_over:
                     turn = turn % 2
 
             # # Ask for AI Input
-        if turn == 1:
+        if turn == 1 and not game_over:
             # posx = event.pos[0]
             # col = int(math.floor(posx/SQUARESIZE))
             stone_count_player = count_turns_stone(board, 0)
             stone_count_AI = count_turns_stone(board, 1)
             boolTurnAI = True
+            minmax_board = board.copy()
+
             # vi vil gemme den column vi vil lægge i
-            col, bestscore = minMax(board, stone_count_AI,
-                                    stone_count_player, boolTurnAI)  # <-------------------------------------------------(Her har vi implementere algoritmen)
+            # <---------------------------------------(Her kaldes algoritmen)
+            col, bestscore = minMax(
+                minmax_board, stone_count_AI, stone_count_player, boolTurnAI, 5)
 
             row = get_next_open_row(board, col)
             drop_piece(board, row, col, 2)
@@ -136,4 +140,4 @@ while not game_over:
             turn = turn % 2
 
         if game_over:
-            pygame.time.wait(3000)
+            pygame.time.wait(6000)

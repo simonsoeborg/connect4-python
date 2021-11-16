@@ -1,9 +1,14 @@
+import numpy as np
 # Author: Keith Galli
 # Githun: https://github.com/KeithGalli/Connect4-Python
 
 
 ROW_COUNT = 6
 COLUMN_COUNT = 7
+
+
+def print_board(board):
+    print(np.flip(board, 0))
 
 
 def get_next_open_row(board, col):
@@ -14,14 +19,6 @@ def get_next_open_row(board, col):
 
 def drop_piece(board, row, col, piece):
     board[row][col] = piece
-
-# Col 0 1 2 3 4 5 6 7
-# [ 0, 0, 0, 0, 0, 0 ] Row 0
-# [ 0, 0, 0, 0, 0, 0 ] 1
-# [ 0, 0, 0, 0, 0, 0 ] 2
-# [ 0, 0, 0, 0, 0, 0 ] 3
-# [ 0, 0, 0, 0, 0, 0 ] 4
-# [ 0, 0, 0, 0, 0, 0 ] 5
 
 
 def is_valid_location(board, col):
