@@ -1,6 +1,5 @@
 import sys
 import random
-import math
 from pygame import register_quit
 from connect4_controller import *
 # Author: Karl Emil, Simon Søborg, Kristoffer Baumgarten
@@ -47,31 +46,9 @@ def calc_score(board, bool_turn_AI):
     score = 0
     piece = 1
     line = []
-
+    scores = dict({})
     if(not bool_turn_AI):
         piece = 2
-
-    # Det der er smart ved at definere en høj værdi for mid column. Er at den vil altid prior mid rækken på første move
-    # Da den vil return højest point i mid column
-    for r in range(ROW_COUNT):
-        if(piece == board[r][4]):
-            score += 1
-    # for at AI ved det er smartest at lægge i midten
-    score = score * 3
-
-    # Check points vertical locations
-    for c in range(COLUMN_COUNT):
-        line.clear()
-        for r in range(ROW_COUNT):
-            if board[r][c] == piece:
-                line.append(board[r][c])
-                score += line.count(piece)
-            elif (r < ROW_COUNT-1 and slice(board[r][c], board[r+1][c]) == piece):
-                line.append(board[r][c])
-                score += line.count(piece) * 2
-            elif (r < ROW_COUNT-2 and slice(board[r][c], board[r+2][c]) == piece):
-                line.append(board[r][c])
-                score += line.count(piece) * 3
 
     # Check points horizontal locations
     for r in range(ROW_COUNT):
@@ -80,29 +57,68 @@ def calc_score(board, bool_turn_AI):
             if (board[r][c] == piece):
                 line.append(board[r][c])
                 score += line.count(piece)
+                scores[score] = str(str(r) + "," + str(c))
             elif (c < COLUMN_COUNT-1 and slice(board[r][c], board[r][c+1]) == piece):
                 line.append(board[r][c])
                 score += line.count(piece) * 2
+                scores[score] = str(str(r) + "," + str(c))
             elif (c < COLUMN_COUNT-2 and slice(board[r][c], board[r][c+2]) == piece):
                 line.append(board[r][c])
                 score += line.count(piece) * 3
+                scores[score] = str(str(r) + "," + str(c))
 
-    # TODO: Check points diagonal locations
+    # Check points vertical locations
+    for c in range(COLUMN_COUNT):
+        line.clear()
+        for r in range(ROW_COUNT):
+            if board[r][c] == piece:
+                line.append(board[r][c])
+                score += line.count(piece)
+                scores[score] = str(str(r) + "," + str(c))
+            elif (r < ROW_COUNT-1 and slice(board[r][c], board[r+1][c]) == piece):
+                line.append(board[r][c])
+                score += line.count(piece) * 2
+                scores[score] = str(str(r) + "," + str(c))
+            elif (r < ROW_COUNT-2 and slice(board[r][c], board[r+2][c]) == piece):
+                line.append(board[r][c])
+                score += line.count(piece) * 3
+                scores[score] = str(str(r) + "," + str(c))
+
+    # Check points diagonal locations
     for c in range(COLUMN_COUNT - 3):
         line.clear()
 
-    return score
+    # Check points negativ slope locations
+    #print("player: " + str(piece) + " have the score " + str(score))
 
+    if(piece == 1):
+        if(len(scores) > 0):
+            print("Best Score: " + str((-1 * max(scores))) +
+                  " | Board Piece: " + str(scores[max(scores)]))
+    else:
+        if(len(scores) > 0):
+            print("Best Score: " + str(max(scores)) +
+                  " | Board Piece: " + str(scores[max(scores)]))
+
+    if(len(scores) > 0):
+        return str(max(scores)) + "|" + str(scores[max(scores)])
+    else:
+        return None
     # --------------------------------------------- MinMax algo ---------------------------------------------
 
     # vores minMax skal returnere den bedste column for det givende move den skal lægge i.
 
 
-def minMax(minmax_board, bool_turn_AI, depth):
+def minMax(minmax_board, stone_count_AI, stone_count_player, bool_turn_AI, depth):
     currentBoard = minmax_board.copy()
+
+    # Hvis det skulle ende i en draw - sætter den forrest da den måske kunne komme out of bounds hvis den køre til slut
+    if(is_a_draw(currentBoard)):
+        return (None, 0)
 
     # Hvis AI vinder på en leaf
     if(winning_move(currentBoard, 2)):
+
         return (None, (10000000000000000))
 
     # hvis Spilleren vinder på en leaf
@@ -110,42 +126,63 @@ def minMax(minmax_board, bool_turn_AI, depth):
 
         return (None, (-10000000000000000))
 
-    # Hvis det skulle ende i en draw - sætter den forrest da den måske kunne komme out of bounds hvis den køre til slut
-    if(is_a_draw(currentBoard)):
-        return (None, 0)
-
     # når vi stopper den på en dybde
     if (depth == 0):
-        return (None, calc_score(currentBoard, bool_turn_AI))
-
+        data = calc_score(currentBoard, bool_turn_AI)
+        if(data != None):
+            intScore = data.split("|")[0]
+            return (None, int(intScore))
+        else:
+            return (None, 0)
     # for den givende state minmax er på, skal den lave en liste med alle de mulige seperate moves.
     column_move = []
     # isMax for AI - Men at vi også ved at det er AI's tur isMax == AITurn
     if(bool_turn_AI):
         bool_turn_AI = False
+        currentBestCol = 0
         # AI # currentMaxVal = -∞
 
         column_move = get_valid_locations(currentBoard)
-        # random.shuffle(column_move)
+        random.shuffle(column_move)
         for c in column_move:
 
-            currentMaxVal = -math.inf
+            # [ 0, 0, 0, 0, 0, 0, 0 ]
+            # [ 0, 0, 0, 0, 0, 0, 0 ]
+            # [ 0, 0, 0, 2, 0, 0, 0 ]
+            # [ 1, 0, 0, 1, 1, 2, 0 ]
+            # [ 1, 0, 0, 1, 2, 1, 0 ]
+            # [ 1, 0, 1, 1, 2, 2, 1 ]
+
+            currentMaxVal = -sys.maxsize-1
 
             r = get_next_open_row(currentBoard, c)
             newBoard = currentBoard.copy()
             # For each Column -> Calc score for each valid location -> Return highest / lowest Score, and best location board[c][r]
             # Create new Board -> Drop piece -> Run MinMax on new Board
-            drop_piece(newBoard, r, c, 2)
-            bestCol, maxVal = minMax(newBoard, bool_turn_AI, depth-1)
+            data = calc_score(newBoard, bool_turn_AI)
+            if (data != None):
+                placement = data.split("|")[1]
+                renderPlacement_to_c = placement.split(",")[1]
+                renderPlacement_to_r = placement.split(",")[0]
+                print("c: " + str(renderPlacement_to_c))
+                print("r: " + str(renderPlacement_to_r))
+                drop_piece(newBoard, int(renderPlacement_to_r),
+                           int(renderPlacement_to_c), 2)
+                bestCol, maxVal = minMax(
+                    newBoard, stone_count_AI+1, stone_count_player, bool_turn_AI, depth-1)
 
-            if(maxVal > currentMaxVal):
-                currentMaxVal = maxVal
-                currentBestCol = c
-                print("AI!: dette er maxVal : " + str(maxVal) + " for column: " +
-                      str(c) + " og currentVal er: " + str(currentMaxVal))
+                if(maxVal > currentMaxVal):
+                    currentMaxVal = maxVal
+                    currentBestCol = c
+            else:
+                drop_piece(newBoard, r, c, 2)
+                bestCol, maxVal = minMax(
+                    newBoard, stone_count_AI+1, stone_count_player, bool_turn_AI, depth-1)
 
-        print("AI!: this is the best value: " + str(currentMaxVal) +
-              " this is the best Col: " + str(currentBestCol))
+                if(maxVal > currentMaxVal):
+                    currentMaxVal = maxVal
+                    currentBestCol = c
+
         return (currentBestCol, currentMaxVal)
 
     else:
@@ -154,22 +191,20 @@ def minMax(minmax_board, bool_turn_AI, depth):
         bool_turn_AI = True
 
         # Player # currentMinVal = ∞
-        currentMinVal = math.inf
+        currentMinVal = sys.maxsize
 
         column_move = get_valid_locations(currentBoard)
+        random.shuffle(column_move)
         for c in column_move:
+            currentMaxVal = -sys.maxsize-1
             r = get_next_open_row(currentBoard, c)
             newBoard = currentBoard.copy()
             drop_piece(newBoard, r, c, 1)
             minCol, minVal = minMax(
-                newBoard, bool_turn_AI, depth-1)
+                newBoard, stone_count_AI, stone_count_player+1, bool_turn_AI, depth-1)
 
             if(minVal < currentMinVal):
                 currentMinVal = minVal
                 currentMinCol = c
-                print("Spiller!: dette er maxVal : " + str(minVal) + " for column: " +
-                      str(c) + " og currentVal er: " + str(currentMinVal))
 
-        print("Spiller!: this is the best value: " + str(currentMinVal) +
-              " this is the best Col: " + str(currentMinCol))
         return (currentMinCol, currentMinVal)
