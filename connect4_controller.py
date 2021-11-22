@@ -17,6 +17,13 @@ def get_next_open_row(board, col):
             return r
 
 
+def is_draw(board):
+    for r in range(ROW_COUNT):
+        if board[r][0] == 0:
+            return False
+    return True
+
+
 def drop_piece(board, row, col, piece):
     board[row][col] = piece
 

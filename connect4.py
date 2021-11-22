@@ -12,6 +12,7 @@ BLUE = (0, 102, 204)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
+BLACK = (0, 0, 0)
 
 
 ROW_COUNT = 6
@@ -101,7 +102,7 @@ while not game_over:
                     drop_piece(board, row, col, 1)
 
                     if winning_move(board, 1):
-                        label = myfont.render("Player 1 wins!!", 1, RED)
+                        label = myfont.render("Player 1 wins", 1, RED)
                         screen.blit(label, (40, 10))
                         game_over = True
 
@@ -126,7 +127,7 @@ while not game_over:
             drop_piece(board, row, col, 2)
 
             if winning_move(board, 2):
-                label = myfont.render("Player 2 wins!!", 1, YELLOW)
+                label = myfont.render("Player 2 wins", 1, YELLOW)
                 screen.blit(label, (40, 10))
                 game_over = True
 
@@ -135,6 +136,11 @@ while not game_over:
 
             turn += 1
             turn = turn % 2
+
+        if is_a_draw(board):
+            label = myfont.render("It's a draw", 1, BLACK)
+            screen.blit(label, (40, 10))
+            game_over = True
 
         if game_over:
             pygame.time.wait(6000)
