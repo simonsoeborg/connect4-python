@@ -1,9 +1,9 @@
+# Author: Karl Emil, Simon Søborg, Kristoffer Baumgarten
 import sys
 import random
 import math
 from pygame import register_quit
 from connect4_controller import *
-# Author: Karl Emil, Simon Søborg, Kristoffer Baumgarten
 
 # denne scorestone er hvad leafnode returner for vi ved hvilken "gren" vi skal tag under vores minMax-algoritme
 SCORE_STONES = 22
@@ -88,8 +88,35 @@ def calc_score(board, bool_turn_AI):
                 score += line.count(piece) * 3
 
     # TODO: Check points diagonal locations
-    for c in range(COLUMN_COUNT - 3):
+    # Check down right from column = 2 and 3 
+    # [ 0, 0, 0, 0, 0, 0, 0 ]
+    # [ 0, 1, 2, 3, 4, 5, 6 ]
+    for c in range(COLUMN_COUNT-3):
         line.clear()
+        for r in range(ROW_COUNT-3):
+            if(board[r][c] == piece):
+                line.append(board[r][c])
+                score += line.count(piece)
+            elif(board[r+1][c+1] == piece):
+                line.append(board[r][c])
+                score += line.count(piece) * 2
+            elif(board[r+2][c+2] == piece):
+                line.append(board[r][c])
+                score += line.count(piece) * 3
+    # Check down left from column = 3 and 4
+    for c in range(2, COLUMN_COUNT):
+        line.clear()
+        for r in range(ROW_COUNT-3):
+            if(board[r][c] == piece):
+                line.append(board[r][c])
+                score += line.count(piece)
+            elif(board[r-1][c-1] == piece):
+                line.append(board[r][c])
+                score += line.count(piece) * 2
+            elif(board[r-2][c-2] == piece):
+                line.append(board[r][c])
+                score += line.count(piece) * 3
+
 
     return score
 
