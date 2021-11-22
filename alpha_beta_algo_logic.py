@@ -126,7 +126,7 @@ def alpha_beta_algo(minmax_board, alpha, beta, bool_turn_AI, depth):
         # AI # currentMaxVal = -∞
         currentMaxVal = -math.inf
         column_move = get_valid_locations(currentBoard)
-        # random.shuffle(column_move)
+        random.shuffle(column_move)
         for c in column_move:
 
             r = get_next_open_row(currentBoard, c)
@@ -134,14 +134,18 @@ def alpha_beta_algo(minmax_board, alpha, beta, bool_turn_AI, depth):
             # For each Column -> Calc score for each valid location -> Return highest / lowest Score, and best location board[c][r]
             # Create new Board -> Drop piece -> Run MinMax on new Board
             drop_piece(newBoard, r, c, 2)
-            bestCol, maxVal = alpha_beta_algo(newBoard, bool_turn_AI, depth-1)
+            bestCol, maxVal = alpha_beta_algo(
+                newBoard, alpha, beta, bool_turn_AI, depth-1)
 
             if(maxVal > currentMaxVal):
                 currentMaxVal = maxVal
                 currentBestCol = c
-                
-            if ()
 
+            # fail-hard-prunning
+            if (currentMaxVal >= beta):
+                break
+            if (alpha < currentMaxVal):
+                alpha = maxVal
 
         return (currentBestCol, currentMaxVal)
 
@@ -150,19 +154,23 @@ def alpha_beta_algo(minmax_board, alpha, beta, bool_turn_AI, depth):
 
         # Player # currentMinVal = ∞
         currentMinVal = math.inf
-
         column_move = get_valid_locations(currentBoard)
+        random.shuffle(column_move)
         for c in column_move:
             r = get_next_open_row(currentBoard, c)
             newBoard = currentBoard.copy()
             drop_piece(newBoard, r, c, 1)
-            minCol, minVal = alpha_beta_algo(newBoard, bool_turn_AI, depth-1)
+            minCol, minVal = alpha_beta_algo(
+                newBoard, alpha, beta, bool_turn_AI, depth-1)
 
             if(minVal < currentMinVal):
                 currentMinVal = minVal
                 currentMinCol = c
-            if(currentMinVal < alpha):
+
+            # fail-hard-prunning
+            if(currentMinVal <= alpha):
                 break
-            beta = min(beta,currentMinVal)
+            if(beta > currentMinVal):
+                beta = minVal
 
         return (currentMinCol, currentMinVal)
