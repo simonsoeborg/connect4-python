@@ -68,7 +68,7 @@ pygame.display.update()
 
 myfont = pygame.font.SysFont("monospace", 75)
 
-#turn = random.randint(0, 1)
+# turn = random.randint(0, 1)
 
 while not game_over:
 
@@ -120,12 +120,7 @@ while not game_over:
 
             # vi vil gemme den column vi vil lægge i
             # <---------------------------------------(Her kaldes algoritmen)
-            col, bestscore = minMax(
-<<<<<<< HEAD
-                minmax_board, boolTurnAI, 5)
-=======
-                minmax_board, boolTurnAI, 1)
->>>>>>> minMax
+            col, bestscore = minMax(minmax_board, boolTurnAI, 5)
 
             row = get_next_open_row(board, col)
             drop_piece(board, row, col, 2)
