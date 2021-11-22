@@ -121,7 +121,7 @@ while not game_over:
             # vi vil gemme den column vi vil lægge i
             # <---------------------------------------(Her kaldes algoritmen)
             col, bestscore = minMax(
-                minmax_board, boolTurnAI, 4)
+                minmax_board, boolTurnAI, 1)
 
             row = get_next_open_row(board, col)
             drop_piece(board, row, col, 2)

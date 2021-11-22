@@ -54,7 +54,7 @@ def calc_score(board, bool_turn_AI):
     # Det der er smart ved at definere en høj værdi for mid column. Er at den vil altid prior mid rækken på første move
     # Da den vil return højest point i mid column
     for r in range(ROW_COUNT):
-        if(piece == board[r][4]):
+        if(piece == board[r][3]):
             score += 1
     # for at AI ved det er smartest at lægge i midten
     score = score * 3
@@ -124,12 +124,10 @@ def minMax(minmax_board, bool_turn_AI, depth):
     if(bool_turn_AI):
         bool_turn_AI = False
         # AI # currentMaxVal = -∞
-
+        currentMaxVal = -math.inf
         column_move = get_valid_locations(currentBoard)
         # random.shuffle(column_move)
         for c in column_move:
-
-            currentMaxVal = -math.inf
 
             r = get_next_open_row(currentBoard, c)
             newBoard = currentBoard.copy()
@@ -148,9 +146,7 @@ def minMax(minmax_board, bool_turn_AI, depth):
               " this is the best Col: " + str(currentBestCol))
         return (currentBestCol, currentMaxVal)
 
-    else:
-        # _______________________________________min_max_player__________________________________________
-
+    else:  # _______________________________________min_max_player__________________________________________
         bool_turn_AI = True
 
         # Player # currentMinVal = ∞
@@ -161,8 +157,7 @@ def minMax(minmax_board, bool_turn_AI, depth):
             r = get_next_open_row(currentBoard, c)
             newBoard = currentBoard.copy()
             drop_piece(newBoard, r, c, 1)
-            minCol, minVal = minMax(
-                newBoard, bool_turn_AI, depth-1)
+            minCol, minVal = minMax(newBoard, bool_turn_AI, depth-1)
 
             if(minVal < currentMinVal):
                 currentMinVal = minVal
