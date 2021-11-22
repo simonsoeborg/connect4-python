@@ -6,7 +6,7 @@ import pygame
 import sys
 import math
 from connect4_controller import *
-from minmax_logic import *
+from alpha_beta_algo_logic import *
 
 BLUE = (0, 102, 204)
 WHITE = (255, 255, 255)
@@ -118,10 +118,14 @@ while not game_over:
             # col = int(math.floor(posx/SQUARESIZE)
             boolTurnAI = True
             minmax_board = board.copy()
+            alpha = -math.inf
+            beta = math.inf
+            depth = 7
 
             # vi vil gemme den column vi vil lægge i
             # <---------------------------------------(Her kaldes algoritmen)
-            col, bestscore = minMax(minmax_board, boolTurnAI, 5)
+            col, bestscore = alpha_beta_algo(
+                minmax_board, alpha, beta, boolTurnAI, depth)
 
             row = get_next_open_row(board, col)
             drop_piece(board, row, col, 2)
