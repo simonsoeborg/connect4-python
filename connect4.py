@@ -120,7 +120,7 @@ while not game_over:
             minmax_board = board.copy()
             alpha = -math.inf
             beta = math.inf
-            depth = 5
+            depth = 7
 
             # vi vil gemme den column vi vil lægge i
             # <---------------------------------------(Her kaldes algoritmen)
