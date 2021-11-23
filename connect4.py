@@ -69,7 +69,7 @@ pygame.display.update()
 
 myfont = pygame.font.SysFont("monospace", 75)
 
-# turn = random.randint(0, 1)
+turn = random.randint(0, 1)
 
 while not game_over:
 
@@ -120,7 +120,7 @@ while not game_over:
             minmax_board = board.copy()
             alpha = -math.inf
             beta = math.inf
-            depth = 7
+            depth = 5
 
             # vi vil gemme den column vi vil lægge i
             # <---------------------------------------(Her kaldes algoritmen)
