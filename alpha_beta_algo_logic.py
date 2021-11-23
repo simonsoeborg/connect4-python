@@ -87,9 +87,32 @@ def calc_score(board, bool_turn_AI):
                 line.append(board[r][c])
                 score += line.count(piece) * 3
 
-    # TODO: Check points diagonal locations
-    for c in range(COLUMN_COUNT - 3):
+    # Check points diagonal locations
+    for c in range(COLUMN_COUNT-3):
         line.clear()
+        for r in range(ROW_COUNT-3):
+            if(board[r][c] == piece):
+                line.append(board[r][c])
+                score += line.count(piece)
+            elif(board[r+1][c+1] == piece):
+                line.append(board[r][c])
+                score += line.count(piece) * 2
+            elif(board[r+2][c+2] == piece):
+                line.append(board[r][c])
+                score += line.count(piece) * 3
+    # Check down left from column = 3 and 4
+    for c in range(2, COLUMN_COUNT):
+        line.clear()
+        for r in range(ROW_COUNT-3):
+            if(board[r][c] == piece):
+                line.append(board[r][c])
+                score += line.count(piece)
+            elif(board[r-1][c-1] == piece):
+                line.append(board[r][c])
+                score += line.count(piece) * 2
+            elif(board[r-2][c-2] == piece):
+                line.append(board[r][c])
+                score += line.count(piece) * 3
 
     return score
 
